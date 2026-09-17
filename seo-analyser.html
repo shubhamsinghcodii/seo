@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free SEO Analyser - Check Any Website</title>
+<meta name="description" content="Free single-file SEO analyser. Enter any URL to check title, meta, headings, images, links, speed and get a 0-100 SEO score.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#f1f5f9;color:#0f172a}
+header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:18px} header b span{color:#38bdf8}
+.container{max-width:900px;margin:0 auto;padding:24px 16px}
+.hero{background:#fff;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.hero h1{font-size:28px;margin-bottom:8px}
+.hero p{color:#64748b;margin-bottom:20px}
+form{display:flex;gap:10px;max-width:640px;margin:0 auto;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:220px;padding:13px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px}
+input[type=text]:focus{border-color:#38bdf8;outline:none}
+button{padding:13px 28px;background:#0284c7;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+button:hover{background:#0369a1}button:disabled{opacity:.6;cursor:wait}
+.error{background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;margin-top:16px;display:none}
+.loading{display:none;margin-top:16px;color:#0284c7;font-weight:600}
+.score-card{background:#fff;border-radius:16px;padding:24px;margin-top:20px;display:none;gap:20px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.06);flex-wrap:wrap}
+.score{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0}
+.checks{background:#fff;border-radius:16px;margin-top:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06);display:none}
+.row{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.row:last-child{border:none}
+.row small{color:#64748b;display:block;margin-top:4px;word-break:break-word}
+.badge{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+.pass{background:#dcfce7;color:#16a34a}.warn{background:#fef3c7;color:#d97706}.fail{background:#fee2e2;color:#dc2626}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+.stat{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.stat b{font-size:22px;display:block}
+.stat span{color:#64748b;font-size:13px}
+.tips{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:18px;margin-top:16px}
+footer{text-align:center;color:#94a3b8;font-size:13px;padding:24px}
+@media(max-width:600px){.hero h1{font-size:22px}form{flex-direction:column}button{width:100%}}
+</style>
+</head>
+<body>
+<header><b>SEO<span>Analyser</span></b><span style="font-size:13px;color:#94a3b8">Free &bull; Single HTML File</span></header>
+<div class="container">
+  <div class="hero">
+    <h1>Website SEO Analyser</h1>
+    <p>Enter any website URL to get instant SEO score, issues &amp; fixes — 100% free.</p>
+    <form id="f">
+      <input type="text" id="url" placeholder="https://example.com" required>
+      <button type="submit" id="btn">Analyse</button>
+    </form>
+    <div class="error" id="err"></div>
+    <div class="loading" id="load">Fetching &amp; analysing... please wait</div>
+  </div>
+
+  <div class="score-card" id="scoreCard">
+    <div class="score" id="scoreCircle"><span style="font-size:32px" id="scoreNum">0</span><span style="font-size:13px">/ 100</span></div>
+    <div><h2 style="font-size:20px" id="scoreTitle"></h2><p style="color:#64748b;margin-top:6px" id="scoreMeta"></p></div>
+  </div>
+
+  <div class="grid" id="stats" style="display:none">
+    <div class="stat"><b id="sHead">-</b><span>H1 / H2 / H3</span></div>
+    <div class="stat"><b id="sImg">-</b><span>Images (no ALT)</span></div>
+    <div class="stat"><b id="sLink">-</b><span>Internal / External</span></div>
+    <div class="stat"><b id="sWords">-</b><span>Words</span></div>
+  </div>
+
+  <div class="grid" id="defaultStats">
+    <div class="stat"><b>11</b><span>SEO checks</span></div>
+    <div class="stat"><b>0-100</b><span>Instant score</span></div>
+    <div class="stat"><b>1 file</b><span>No server</span></div>
+    <div class="stat"><b>Free</b><span>No API key</span></div>
+  </div>
+
+  <div class="checks" id="checks"></div>
+
+  <div class="tips"><b>Quick fixes to improve score:</b>
+    <ul style="margin:8px 0 0 18px;line-height:1.8;font-size:14px">
+      <li>Keep title 30-60 chars with main keyword at start.</li>
+      <li>Write meta description 120-160 chars like an ad (benefit + CTA).</li>
+      <li>Use exactly one H1, add ALT to every image.</li>
+      <li>Add canonical, Open Graph tags &amp; favicon.</li>
+      <li>Add 300+ words, internal links, HTTPS and fast hosting.</li>
+    </ul>
+    <span style="font-size:13px;color:#64748b">Note: HTML version fetches via a free CORS proxy (api.allorigins.win) so it works without PHP. Some sites block proxies.</span>
+  </div>
+</div>
+<footer>Simple SEO Analyser &bull; Single .html file &bull; No tracking</footer>
+
+<script>
+const f = document.getElementById('f');
+const err = document.getElementById('err');
+const load = document.getElementById('load');
+
+function norm(u){
+  u = (u||'').trim();
+  if(!u) return '';
+  if(!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  return u;
+}
+function lenStatus(len, min, max){
+  if(len === 0) return 'FAIL';
+  if(len >= min && len <= max) return 'PASS';
+  return 'WARN';
+}
+function esc(s){ return (s||'').replace(/</g,'&lt;'); }
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  err.style.display = 'none';
+  let url = norm(document.getElementById('url').value);
+  try { new URL(url); } catch { err.textContent = 'Please enter a valid URL. Example: https://example.com'; err.style.display='block'; return; }
+  const btn = document.getElementById('btn');
+  btn.disabled = true; load.style.display = 'block';
+  document.getElementById('scoreCard').style.display = 'none';
+  document.getElementById('checks').style.display = 'none';
+  document.getElementById('stats').style.display = 'none';
+  const t0 = performance.now();
+  try {
+    const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+    if(!r.ok) throw new Error('Proxy HTTP ' + r.status);
+    const j = await r.json();
+    const html = j.contents || '';
+    if(!html) throw new Error('Empty response (site may block proxies). Try another URL.');
+    const secs = ((performance.now() - t0) / 1000).toFixed(2);
+    analyse(url, html, secs);
+  } catch (ex) {
+    err.textContent = 'Could not fetch this website. ' + ex.message;
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; load.style.display = 'none';
+  }
+});
+
+function analyse(url, html, secs){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const q = (s) => doc.querySelector(s);
+  const qa = (s) => Array.from(doc.querySelectorAll(s));
+  const title = (q('title') ? q('title').textContent.trim() : '');
+  const desc = (q('meta[name="description"]') || {}).content || '';
+  const hasViewport = !!q('meta[name="viewport"]');
+  const hasCanonical = !!q('link[rel="canonical"]');
+  const hasFavicon = !!q('link[rel="icon"], link[rel="shortcut icon"]');
+  const hasOG = qa('meta[property^="og:"]').length > 0;
+  const h1s = qa('h1'), h2s = qa('h2'), h3s = qa('h3');
+  const imgs = qa('img');
+  const noAlt = imgs.filter(i => !(i.getAttribute('alt')||'').trim()).length;
+  const host = (()=>{ try{return new URL(url).hostname;}catch{return '';} })();
+  let pin = 0, pex = 0;
+  qa('a[href]').forEach(a => {
+    const h = (a.getAttribute('href')||'').trim();
+    if(!h || h[0] === '#') return;
+    try {
+      const u = new URL(h, url);
+      if(!u.hostname || u.hostname === host) pin++; else pex++;
+    } catch { pin++; }
+  });
+  const words = (doc.body ? doc.body.textContent.trim().replace(/\s+/g,' ').split(' ').filter(Boolean).length : 0);
+  const isHttps = /^https:\/\//i.test(url);
+  const sizeKB = (new Blob([html]).size / 1024).toFixed(1);
+
+  let score = 0; const checks = [];
+  const add = (label, status, detail, pts) => {
+    if(status === 'PASS') score += pts; else if(status === 'WARN') score += Math.floor(pts/2);
+    checks.push({label, status, detail});
+  };
+  add('Title tag', lenStatus(title.length,30,60), (title||'Missing') + ' (' + title.length + ' chars, ideal 30-60)', 15);
+  add('Meta description', lenStatus(desc.length,120,160), (desc ? desc.slice(0,160) : 'Missing') + ' (' + desc.length + ' chars, ideal 120-160)', 15);
+  add('Mobile viewport', hasViewport?'PASS':'FAIL', hasViewport?'Viewport meta found - mobile friendly':'No viewport meta - not mobile friendly', 10);
+  add('H1 heading', h1s.length===1?'PASS':(h1s.length===0?'FAIL':'WARN'), 'Found ' + h1s.length + ' H1 (ideal: exactly 1). H2: ' + h2s.length + ', H3: ' + h3s.length, 10);
+  add('Image ALT text', imgs.length===0?'WARN':(noAlt===0?'PASS':'WARN'), noAlt + ' of ' + imgs.length + ' images missing ALT', 10);
+  add('HTTPS', isHttps?'PASS':'FAIL', isHttps?'Secure HTTPS':'Not HTTPS', 5);
+  add('Content length', words>=300?'PASS':'WARN', words + ' words (ideal 300+)', 10);
+  add('Internal linking', pin>0?'PASS':'WARN', 'Internal: ' + pin + ', External: ' + pex, 5);
+  add('Canonical / Social', (hasCanonical&&hasOG)?'PASS':'WARN', 'Canonical: ' + (hasCanonical?'Yes':'No') + ', Open Graph: ' + (hasOG?'Yes':'No') + ', Favicon: ' + (hasFavicon?'Yes':'No'), 10);
+  add('Speed + Size', secs<2?'PASS':(secs<4?'WARN':'FAIL'), 'Fetched in ' + secs + 's (via proxy), HTML ' + sizeKB + 'KB', 10);
+
+  document.getElementById('scoreNum').textContent = score;
+  const col = score>=80 ? '#16a34a' : (score>=50 ? '#d97706' : '#dc2626');
+  document.getElementById('scoreCircle').style.background = col;
+  document.getElementById('scoreTitle').textContent = url + ' — ' + (score>=80?'Excellent!':(score>=50?'Good, needs fixes':'Needs work'));
+  document.getElementById('scoreMeta').textContent = 'Fetched in ' + secs + 's • ' + sizeKB + 'KB • ' + words + ' words';
+  document.getElementById('scoreCard').style.display = 'flex';
+
+  document.getElementById('sHead').textContent = h1s.length + '/' + h2s.length + '/' + h3s.length;
+  document.getElementById('sImg').textContent = imgs.length + ' (' + noAlt + ')';
+  document.getElementById('sLink').textContent = pin + '/' + pex;
+  document.getElementById('sWords').textContent = words;
+  document.getElementById('stats').style.display = 'grid';
+  document.getElementById('defaultStats').style.display = 'none';
+
+  const box = document.getElementById('checks');
+  box.innerHTML = checks.map(c =>
+    '<div class="row"><div><b>' + esc(c.label) + '</b><small>' + esc(c.detail) + '</small></div>' +
+    '<div><span class="badge ' + c.status.toLowerCase() + '">' + c.status + '</span></div></div>'
+  ).join('') + (h1s.length ? '<div class="row"><div><b>H1 tags found</b><small>' + esc(h1s.map(h=>h.textContent.trim().slice(0,120)).join(' | ')) + '</small></div></div>' : '');
+  box.style.display = 'block';
+  box.scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>
